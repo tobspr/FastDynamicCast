@@ -1,6 +1,6 @@
 # Fast dynamic cast
 
-This is a dynamic cast implementation which outperforms the regular `dynamic_cast` by up to 25 times.
+This is a single header, dynamic cast implementation which outperforms the regular `dynamic_cast` by up to 25 times.
 
 Works on MSVC 2013 or newer.
 
