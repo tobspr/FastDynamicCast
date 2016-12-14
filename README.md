@@ -56,7 +56,7 @@ It improves performance by observing that, after we ensured the class is convert
 we can cache the offset required to shift the pointer.
 
 For example, assuming we have a `class A` and `B`, whereas `B` derives from `A`, and we want to cast an `A pointer` to a `B pointer`.
-The first time this cast is invoked, the fast dynamic past uses the regular dynamic cast to
+The first time this cast is invoked, the fast dynamic cast uses the regular dynamic cast to
 retrieve the casted pointer.
 
 Lets say the dynamic cast shifted the A pointer by `+8`, then the fast dynamic cast stores this offset.
