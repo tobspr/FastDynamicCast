@@ -38,11 +38,6 @@
   #define DCAST_NO_OFFSET 0x6823934
 #endif
 
-// Notice: __fastcall is not actually required with __forceinline. However, if the
-// compiler chooses not to inline the method (for yet unkown reasons), its important
-// that the method is called with the fastcall calling convention.
-#define DCAST_CALLING_CONVENTION __fastcall
-
 // Only works with Visual Studio 2013 and upwards (Could work in MSVC2010, but yet untested)
 #if FAST_DYNAMIC_CAST_ENABLED && defined(_MSC_VER) && (_MSC_VER >= 1800)
 
@@ -59,7 +54,7 @@ namespace fast_dcast
   using v_table_ptr = const uintptr_t*;
 
   template < typename _Ty >
-  __forceinline v_table_ptr DCAST_CALLING_CONVENTION get_vtable(const _Ty* ptr)
+  __forceinline v_table_ptr get_vtable(const _Ty* ptr)
   {
     // __vftable is at [ptr + 0]
     return reinterpret_cast<v_table_ptr>(*reinterpret_cast<class_obj_ptr>(ptr));
@@ -74,7 +69,7 @@ namespace fast_dcast
   // Should be nothrow but this decreases performance. In practice this is not
   // an issue.
   template < typename _To, typename _From >
-  __forceinline _To DCAST_CALLING_CONVENTION fast_dynamic_cast(_From* ptr)
+  __forceinline _To fast_dynamic_cast(_From* ptr)
   {
     // Not required, dynamic_cast already produces a compile-time error in this case
     // static_assert(std::is_polymorphic<_From>::value, "Type is not polymorphic!");
@@ -106,7 +101,7 @@ namespace fast_dcast
 
   // const T*
   template < typename _To, typename _From >
-  __forceinline const _To DCAST_CALLING_CONVENTION fast_dynamic_cast(const _From* ptr)
+  __forceinline const _To fast_dynamic_cast(const _From* ptr)
   {
     _From* nonconst_ptr = const_cast<_From*>(ptr);
     _To casted_ptr = fast_dynamic_cast<_To>(nonconst_ptr);
@@ -115,7 +110,7 @@ namespace fast_dcast
 
   // T&
   template < typename _To, typename _From, typename = std::enable_if_t<!std::is_same<clean_type_t<_To>, clean_type_t<_From&>>::value>>
-  __forceinline _To DCAST_CALLING_CONVENTION fast_dynamic_cast(_From& ref)
+  __forceinline _To fast_dynamic_cast(_From& ref)
   {
     using _ToPtr = std::add_pointer_t<std::remove_reference_t<_To>>;
     auto casted_ptr = fast_dynamic_cast<_ToPtr>(&ref);
@@ -126,7 +121,7 @@ namespace fast_dcast
 
   // const T&
   template < typename _To, typename _From, typename = std::enable_if_t<!std::is_same<clean_type_t<_To>, clean_type_t<_From&>>::value>>
-  __forceinline _To DCAST_CALLING_CONVENTION fast_dynamic_cast(const _From& ref)
+  __forceinline _To fast_dynamic_cast(const _From& ref)
   {
     using _ToPtr = std::add_pointer_t<std::remove_reference_t<_To>>;
     auto casted_ptr = fast_dynamic_cast<_ToPtr>(const_cast<_From*>(&ref));
@@ -137,7 +132,7 @@ namespace fast_dcast
 
   // std::dynamic_pointer_cast
   template < typename _To, typename _From >
-  inline std::shared_ptr<_To> DCAST_CALLING_CONVENTION fast_dynamic_pointer_cast(const std::shared_ptr<_From>& ptr)
+  __forceinline std::shared_ptr<_To> fast_dynamic_pointer_cast(const std::shared_ptr<_From>& ptr)
   {
     // Do not use std::move, since this might actually prevent RVO on MSVC 2015 and upwards
     return std::shared_ptr<_To>(ptr, fast_dynamic_cast<_To*>(ptr.get()));
@@ -145,7 +140,7 @@ namespace fast_dcast
 
   // T -> T
   template < typename _To >
-  __forceinline _To DCAST_CALLING_CONVENTION fast_dynamic_cast(_To ptr) { return ptr; }
+  __forceinline _To fast_dynamic_cast(_To ptr) { return ptr; }
 }
 
 using fast_dcast::fast_dynamic_cast;

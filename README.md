@@ -37,7 +37,7 @@ B& a_as_b = a;
 A& a_as_a = fast_dynamic_cast<A&>(a_as_b);
 ```
 
-The syntax is identical to the regular dynamic cast.
+The syntax is identical to the regular dynamic cast. Theres also a `fast_dynamic_pointer_cast` available, which behaves identical to `std::dynamic_pointer_cast`.
 
 The dynamic cast implementation only works on MSVC 2013 or newer. For all other compilers,
 it will fallback to the default dynamic cast.
