@@ -2,15 +2,15 @@
 
 This is a dynamic cast implementation which outperforms the regular `dynamic_cast` by up to 25 times.
 
+Works on MSVC 2013 or newer.
 
 # Performance
 
-All performance tests ran on 2 Xeons E5-2623, but should be representative for lower end systems too.
-I ran each iteration count multiple times, and took the average.
+All performance tests ran on 2 Xeons E5-2623. I ran each iteration count multiple times, and took the average.
 
 The solution used to measure the performance can be found in `dcast_performance`.
 
-Notice that all performance tests are more or less best-case scenarios which only perform dynamic_cast (Also see How it works).
+Notice that all performance tests are more or less best-case scenarios which only perform dynamic_cast (see How it works).
 
 ## Simple class hierarchy
 
@@ -75,8 +75,6 @@ When an object is casted, the fast dynamic cast only detects a cache hit if the 
 pointer matches, and if not, performs the regular dynamic cast.
 
 In theory, casting many different objects to the same superclass would then be even less performant
-than the regular dynamic cast.
-
-However, in practice, the cache usage is over 95%, and thus the fast dynamic cast is up to a order
+than the regular dynamic cast. However, in practice, the cache usage is over 95%, and thus the fast dynamic cast is up to a order
 of magnitude faster than the regular dynamic cast. 
 
