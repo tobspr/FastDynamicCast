@@ -63,8 +63,8 @@ and avoids the `dynamic_cast` call.
 
 However, there are two cases where this approach cannot be used:
 
-1. The pointer passed in is not actually castable
-2. The pointer is already shifted
+- The pointer passed in is not actually castable
+- The pointer is already shifted
 
 Case 2 can occur, if we for example call `fast_dynamic_cast<A*>(B*)`, but the passed pointer
 points to a derived `C` class (whereas `C` derives from `B`). This is a problem, since the
