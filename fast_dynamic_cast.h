@@ -30,12 +30,24 @@
 // dynamic cast is.
 #define FAST_DYNAMIC_CAST_ENABLED 1
 
+// Whether the fast dynamic cast will be used from multiple threads. If so,
+// set this to 1, otherwise disable it. With the multithreaded dcast, the
+// performance is marginally slower.
+#define DCAST_MULTITHREADED 1
+
 // Magic value used to indicate that there is no cache entry for this particular
 // conversion yet. Should be a fairly high value to avoid collisions.
 #if _WIN64
-  #define DCAST_NO_OFFSET 0x6823934549LL
+  #define DCAST_NO_OFFSET 0x7FFFFFFFFFFFFFFFLL
 #else 
-  #define DCAST_NO_OFFSET 0x6823934
+  #define DCAST_NO_OFFSET 0x7FFFFFFLL
+#endif
+
+// Declare variables as thread local when using multithreaded dcast
+#if DCAST_MULTITHREADED
+  #define DCAST_THREADLOCAL __declspec(thread)
+#else
+  #define DCAST_THREADLOCAL
 #endif
 
 // Only works with Visual Studio 2013 and upwards (Could work in MSVC2010, but yet untested)
@@ -77,8 +89,8 @@ namespace fast_dcast
     if (!ptr)
       return nullptr;
 
-    static ptrdiff_t offset = DCAST_NO_OFFSET;
-    static v_table_ptr src_vtable_ptr;
+    DCAST_THREADLOCAL static ptrdiff_t offset = DCAST_NO_OFFSET;
+    DCAST_THREADLOCAL static v_table_ptr src_vtable_ptr;
 
     v_table_ptr this_vtable = get_vtable(ptr);
     if (offset != DCAST_NO_OFFSET && src_vtable_ptr == this_vtable)
@@ -157,6 +169,8 @@ using fast_dcast::fast_dynamic_pointer_cast;
 #undef FAST_DYNAMIC_CAST_ENABLED
 #undef DCAST_NO_OFFSET
 #undef DCAST_CALLING_CONVENTION
+#undef DCAST_MULTITHREADED
+#undef DCAST_THREADLOCAL
 
 #endif // FAST_DYNAMIC_CAST_H
 

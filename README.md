@@ -42,6 +42,8 @@ The syntax is identical to the regular dynamic cast. Theres also a `fast_dynamic
 The dynamic cast implementation only works on MSVC 2013 or newer. For all other compilers,
 it will fallback to the default dynamic cast.
 
+If you want to use it in a multithreaded environment, change `DCAST_MULTITHREADED` to `1`.
+
 # How it works
 
 The dynamic cast has two tasks to do:

@@ -5,7 +5,7 @@
 #include <string>
 #include <functional>
 #include <chrono>
-
+#include <thread>
 
 // Helper method to measure output, returns duration in milliseconds
 long long measure(const std::string& topic, const std::function<void()>& body) {
@@ -18,9 +18,9 @@ long long measure(const std::string& topic, const std::function<void()>& body) {
   return ms;
 }
 
-void main() {
+int main() {
 
-  size_t num_iterations = 50000000;
+  size_t num_iterations = 2000000;
 
   // Performance test 1, simple class hierarchy
   // 
@@ -61,7 +61,7 @@ void main() {
   //      A
   //      |
   //      B
-  //      | \ 
+  //      | \  
   //      C  E
   //      |  |
   //      D  F
@@ -110,6 +110,40 @@ void main() {
         A& a = g;
         accumulated += fast_dynamic_cast<G&>(a).method_g_only();
       }
+    });
+
+
+    measure("Threaded regular dynamic cast complex", [&]() {
+
+      auto runner = [&]() {
+        volatile size_t accumulated = 0;
+        for (size_t i = 0; i < num_iterations; ++i) {
+          G g;
+          A& a = g;
+          accumulated += dynamic_cast<G&>(a).method_g_only();
+        }
+      };
+      std::thread thread_a(runner);
+      std::thread thread_b(runner);
+      thread_a.join();
+      thread_b.join();
+    });
+
+
+    measure("Threaded fast dynamic cast complex", [&]() {
+
+      auto runner = [&]() {
+        volatile size_t accumulated = 0;
+        for (size_t i = 0; i < num_iterations; ++i) {
+          G g;
+          A& a = g;
+          accumulated += fast_dynamic_cast<G&>(a).method_g_only();
+        }
+      };
+      std::thread thread_a(runner);
+      std::thread thread_b(runner);
+      thread_a.join();
+      thread_b.join();
     });
 
   }
