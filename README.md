@@ -62,6 +62,7 @@ The next time the cast is invoked, the incoming pointer is just shifted by `+8` 
 and avoids the `dynamic_cast` call.
 
 However, there are two cases where this approach cannot be used:
+
 1. The pointer passed in is not actually castable
 2. The pointer is already shifted
 
