@@ -93,11 +93,16 @@ namespace fast_dcast
     DCAST_THREADLOCAL static v_table_ptr src_vtable_ptr;
 
     v_table_ptr this_vtable = get_vtable(ptr);
-    if (offset != DCAST_NO_OFFSET && src_vtable_ptr == this_vtable)
+    if (offset != DCAST_NO_OFFSET)
     {
-      // In case we have a cache hit, casting the pointer is straightforward
-      char* new_ptr = reinterpret_cast<char*>(ptr) + offset;
-      return reinterpret_cast<_To>(new_ptr);
+      // In case we have a cache hit, compare direct with stored vtable
+      if (src_vtable_ptr == this_vtable)
+      {
+        // If it matches, casting the pointer is straightforward
+        char* new_ptr = reinterpret_cast<char*>(ptr) + offset;
+        return reinterpret_cast<_To>(new_ptr);
+      }
+      return nullptr;
     }
     else {
       // Need to construct cache entry
