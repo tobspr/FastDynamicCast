@@ -65,6 +65,9 @@ namespace fast_dcast
   // Pointer to __vftable
   using v_table_ptr = const uintptr_t*;
 
+  template < bool _B >
+  struct negation : std::bool_constant<!_B>{};
+
   template < typename _Ty >
   __forceinline v_table_ptr get_vtable(const _Ty* ptr)
   {
@@ -81,7 +84,9 @@ namespace fast_dcast
   // Should be nothrow but this decreases performance. In practice this is not
   // an issue.
   template < typename _To, typename _From >
-  __forceinline _To fast_dynamic_cast(_From* ptr)
+  __forceinline
+  std::enable_if_t<negation<std::is_same<clean_type_t<_To>, clean_type_t<_From>>::value || std::is_base_of<clean_type_t<_To>, clean_type_t<_From>>::value>::value, _To>
+  fast_dynamic_cast(_From* ptr)
   {
     // Not required, dynamic_cast already produces a compile-time error in this case
     // static_assert(std::is_polymorphic<_From>::value, "Type is not polymorphic!");
@@ -110,6 +115,15 @@ namespace fast_dcast
       return result;
     }
   };
+
+  // From derived to base.
+  template < typename _To, typename _From >
+  __forceinline
+  std::enable_if_t<std::is_same<clean_type_t<_To>, clean_type_t<_From>>::value || std::is_base_of<clean_type_t<_To>, clean_type_t<_From>>::value, _To>
+  fast_dynamic_cast(_From* ptr)
+  {
+    return ptr;
+  }
 
   // const T*
   template < typename _To, typename _From >
