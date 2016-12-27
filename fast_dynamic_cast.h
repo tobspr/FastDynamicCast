@@ -39,8 +39,10 @@
 // conversion yet. Should be a fairly high value to avoid collisions.
 #if _WIN64
   #define DCAST_NO_OFFSET 0x7FFFFFFFFFFFFFFFLL
+  #define DCAST_FAILED 0x7FFFFFFFFFFFFFFELL
 #else 
   #define DCAST_NO_OFFSET 0x7FFFFFFLL
+  #define DCAST_FAILED 0x7FFFFFELL
 #endif
 
 // Declare variables as thread local when using multithreaded dcast
@@ -95,18 +97,31 @@ namespace fast_dcast
     v_table_ptr this_vtable = get_vtable(ptr);
     if (offset != DCAST_NO_OFFSET && src_vtable_ptr == this_vtable)
     {
-      // In case we have a cache hit, casting the pointer is straightforward
-      char* new_ptr = reinterpret_cast<char*>(ptr) + offset;
-      return reinterpret_cast<_To>(new_ptr);
+      // Cache hit, first check the failed cast marker
+      if (offset == DCAST_FAILED)
+      {
+        return nullptr;
+      }
+      else
+      {
+        // In case we have a cache hit, casting the pointer is straightforward
+        char* new_ptr = reinterpret_cast<char*>(ptr) + offset;
+        return reinterpret_cast<_To>(new_ptr);
+      }
     }
-    else {
+    else
+    {
       // Need to construct cache entry
       auto result = dynamic_cast<_To>(ptr);
-      if (result == nullptr)
-        return nullptr;
-
       src_vtable_ptr = this_vtable;
-      offset = reinterpret_cast<const char*>(result) - reinterpret_cast<const char*>(ptr);
+      if (result == nullptr)
+      {
+        offset = DCAST_FAILED;
+      }
+      else
+      {
+        offset = reinterpret_cast<const char*>(result) - reinterpret_cast<const char*>(ptr);
+      }
       return result;
     }
   };
